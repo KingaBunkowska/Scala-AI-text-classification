@@ -2,8 +2,8 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 
 class Dataset(spark: SparkSession) {
-  var df: DataFrame = _
-
+  var df: DataFrame = _ 
+  
   def load(filePath: String): Unit = {
 
     val removePunctuation = udf((text: String) => {
@@ -24,8 +24,15 @@ class Dataset(spark: SparkSession) {
       .withColumn("text", removePunctuation(col("text")))
   }
 
-  def split(testSize: Double, seed: Long): (DataFrame, DataFrame) = {
+  def split(testSize: Double, seed: Long): (DataFrame, DataFrame, DataFrame, DataFrame) = {
     val Array(trainingData, testData) = df.randomSplit(Array(1 - testSize, testSize), seed)
-    (trainingData, testData)
+
+    val training_X = trainingData.select("text")
+    val training_Y = trainingData.select("generated")
+
+    val test_X = testData.select("text")
+    val test_Y = testData.select("generated")
+
+    (training_X, training_Y, test_X, test_Y)
   }
 }

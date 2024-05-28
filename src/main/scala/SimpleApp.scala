@@ -15,14 +15,16 @@ object SimpleApplication {
     dataset.df.show(10)
     println(dataset.df.take(1001).tail(1).getString(0))
 
-    val (train_df, test_df) = dataset.split(0.3, 42)
+    val (train_X, train_Y, test_X, test_Y) = dataset.split(0.3, 42)
 
-    println("Train")
-    println(train_df.count())
-    println("Test")
-    println(test_df.count())
-    println("All")
-    println(dataset.df.count())
+
+    val model = new Model(spark)
+
+    model.train(train_X, train_Y)
+    println("Evalutation")
+    println(model.evaluate(test_X, test_Y))
+
+    // println(model.predict("Hello, today we will talk about Scala programming language"))
 
     // End Spark session
     spark.stop()
