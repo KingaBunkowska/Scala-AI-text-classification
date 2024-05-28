@@ -8,18 +8,12 @@ object SimpleApplication {
       .master("local")
       .getOrCreate()
 
-    // Load CSV file
-    val df = spark.read
-        .format("csv")
-        .option("header", "true")
-        .option("quote", "\"")
-        .option("escape", "\"")
-        .option("sep", ",")
-        .option("multiLine", "true")
-        .load("dataset/AI_Human_text.csv")
+    val datasetHandler = new DatasetHandler(spark)
+    datasetHandler.load("dataset/AI_Human_text.csv")
 
     // Show the first row of the DataFrame
-    df.show(2000)
+    datasetHandler.df.show(10)
+    println(datasetHandler.df.take(1001).tail(1).getString(0))
 
     // End Spark session
     spark.stop()
