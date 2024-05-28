@@ -1,7 +1,7 @@
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 
-class DatasetHandler(spark: SparkSession) {
+class Dataset(spark: SparkSession) {
   var df: DataFrame = _
 
   def load(filePath: String): Unit = {
