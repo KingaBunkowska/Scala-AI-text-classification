@@ -18,15 +18,22 @@ object SimpleApplication {
     val (train_X, train_Y, test_X, test_Y) = dataset.split(0.3, 42)
 
 
-    val model = new Model(spark)
+    // val model = new Model(spark)
 
-    model.train(train_X, train_Y)
-    println("Evalutation")
-    println(model.evaluate(test_X, test_Y))
+    // model.train(train_X, train_Y)
+    // println("Evalutation")
+    // println(model.evaluate(test_X, test_Y))
 
     // println(model.predict("Hello, today we will talk about Scala programming language"))
 
     // End Spark session
     spark.stop()
+
+    Screen.main(args)
+
+
+
+
+
   }
 }
