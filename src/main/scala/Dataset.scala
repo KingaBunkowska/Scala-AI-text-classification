@@ -22,6 +22,7 @@ class Dataset(spark: SparkSession) {
 
     df = df.withColumn("text", lower(col("text")))
       .withColumn("text", removePunctuation(col("text")))
+      .withColumn("text", regexp_replace(col("text"), "\n", ""))
   }
 
   def split(testSize: Double, seed: Long): (DataFrame, DataFrame, DataFrame, DataFrame) = {
