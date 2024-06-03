@@ -10,7 +10,6 @@ object SimpleApplication {
 
     val dataset = new Dataset(spark)
     dataset.load("dataset/AI_Human_text.csv")
-
     // Show the first row of the DataFrame
     dataset.df.show(10)
     println(dataset.df.take(1001).tail(1).getString(0))
@@ -20,9 +19,11 @@ object SimpleApplication {
 
     val model = new Model(spark)
 
+    println("wywolanie train")
     model.train(train_X, train_Y)
-    println("Evalutation")
-    println(model.evaluate(test_X, test_Y))
+    println("zakonczono train")
+    // println("Evalutation")
+    // println(model.evaluate(test_X, test_Y))
 
     // println(model.predict("Hello, today we will talk about Scala programming language"))
 
