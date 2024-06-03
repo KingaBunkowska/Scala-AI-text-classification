@@ -8,20 +8,14 @@ object SimpleApplication {
       .master("local")
       .getOrCreate()
 
-    // Load CSV file
-    val df = spark.read
-        .format("csv")
-        .option("header", "true")
-        .option("quote", "\"")
-        .option("escape", "\"")
-        .option("sep", ",")
-        .option("multiLine", "true")
-        .load("dataset/AI_Human_text.csv")
+    val dataset = new Dataset(spark)
+    dataset.load("dataset/AI_Human_text.csv")
 
-    // Show the first row of the DataFrame
-    df.show(2000)
+    val (train, test) = dataset.split(0.3, 42)
 
-    // End Spark session
+    val model = new Model(spark)
+
+    model.train(train)
     spark.stop()
   }
 }
