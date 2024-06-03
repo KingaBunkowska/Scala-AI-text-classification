@@ -25,9 +25,7 @@ class Model(spark: SparkSession){
         tokenizer = new Tokenizer().setInputCol("text").setOutputCol("tokenizedWords")
 
         var tokenizedData = tokenizer
-                            // .transform(texts.select("text"))
                             .transform(texts)
-                            // .withColumn("index", monotonically_increasing_id())
         tokenizedData.show(3)
 
         println("TokenizedData")
@@ -36,13 +34,11 @@ class Model(spark: SparkSession){
         val cv = new CountVectorizer()
         .setInputCol("tokenizedWords")
         .setOutputCol("features")
-        .setVocabSize(10000)  // Rozmiar słownika
+        .setVocabSize(10000)
         .setMinDF(3)           
 
         cvModel = cv.fit(tokenizedData.select("tokenizedWords"))
 
-
-        // val featurizedDF = cvModel.transform(tokenizedData.select("tokenizedWords"))
         val featurizedDF = cvModel.transform(tokenizedData)
         println("FeaturizedDF")
         featurizedDF.columns.foreach(println)
@@ -74,8 +70,6 @@ class Model(spark: SparkSession){
     //     model = NaiveBayesModel.load("model")
     // }
 
-    // }
-
     def evaluate(test: DataFrame): Double = {
         val featurizedDF = cvModel.transform(tokenizer.transform(test))
         val predictions = model.transform(featurizedDF)
@@ -85,14 +79,10 @@ class Model(spark: SparkSession){
         .setPredictionCol("prediction")
         .setMetricName("accuracy")
         val accuracy = evaluator.evaluate(predictions)
-
         accuracy
     }
 
     def predict(text: String): Double = {
-        
-        // val input = Seq(text, "other text").toDF("text")
-        // input.show(1)
 
         val removePunctuation = udf((text: String) => {
             if (text != null) text.replaceAll("""[\p{Punct}]""", "") else null
@@ -100,13 +90,8 @@ class Model(spark: SparkSession){
 
 
         val schema = StructType(Array(StructField("text", StringType, true)))
-
-        // Utworzenie RDD z sekwencji tekstów
         val rdd = spark.sparkContext.parallelize(Seq(Row(text)))
-
-        // Utworzenie DataFrame z RDD i schematu
         var input = spark.createDataFrame(rdd, schema)
-        input.show(1)
 
             input = input.withColumn("text", lower(col("text")))
                     .withColumn("text", removePunctuation(col("text")))
