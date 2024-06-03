@@ -14,13 +14,12 @@ object SimpleApplication {
     dataset.df.show(10)
     println(dataset.df.take(1001).tail(1).getString(0))
 
-    val (train_X, train_Y, test_X, test_Y) = dataset.split(0.3, 42)
-
+    val (train, test) = dataset.split(0.3, 42)
 
     val model = new Model(spark)
 
     println("wywolanie train")
-    model.train(train_X, train_Y)
+    model.train(train)
     println("zakonczono train")
     // println("Evalutation")
     // println(model.evaluate(test_X, test_Y))

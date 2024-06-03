@@ -16,22 +16,22 @@ class Model(spark: SparkSession){
     private var tokenizer: Tokenizer = _
     private var cvModel: CountVectorizerModel = _ 
 
-    def train(texts: DataFrame, labels: DataFrame): Unit = {
-
+    def train(texts: DataFrame): Unit = {
         import spark.implicits._
-        
-        // var train_texts = texts.withColumn("words", lit(null: String))
-        // var train_texts = texts
-        // println("Dostępne kolumny w DataFrame:")
-        // train_texts.columns.foreach(println) // czyli jest kolumna text
-        // println(train_texts.take(1).tail(1).getString(0)) // pierwszy tekst
+
+        println("Texts")
+        texts.columns.foreach(println)
 
         tokenizer = new Tokenizer().setInputCol("text").setOutputCol("tokenizedWords")
 
-        var tokenizedData = tokenizer.transform(texts.select("text"))
-        // tokenizedData.show(3)
+        var tokenizedData = tokenizer
+                            // .transform(texts.select("text"))
+                            .transform(texts)
+                            // .withColumn("index", monotonically_increasing_id())
+        tokenizedData.show(3)
 
-        // tokenizedData.select("tokenizedWords").show(3)
+        println("TokenizedData")
+        tokenizedData.columns.foreach(println)
 
         val cv = new CountVectorizer()
         .setInputCol("tokenizedWords")
@@ -41,15 +41,31 @@ class Model(spark: SparkSession){
 
         cvModel = cv.fit(tokenizedData.select("tokenizedWords"))
 
-        val featurized_df = cvModel.transform(tokenizedData.select("tokenizedWords")).show(6)
 
-        // val firstRow_2:Row = featurized_df.select("words").head()
-        // println("A teraz drugi leci dziki kod")
-        // println(firstRow_2)
+        // val featurizedDF = cvModel.transform(tokenizedData.select("tokenizedWords"))
+        val featurizedDF = cvModel.transform(tokenizedData)
+        println("FeaturizedDF")
+        featurizedDF.columns.foreach(println)
+        
+
+        val nb = new NaiveBayes()
+        .setLabelCol("generated")
+        .setFeaturesCol("features")
+        .setPredictionCol("prediction")
+
+        model = nb.fit(featurizedDF)
+
+        // model.save("model")
+
+        val predictions = model.transform(featurizedDF)
+        predictions.show(5)
 
 
 }
 
+    // def load(filePath: String): Unit = {
+    //     model = NaiveBayesModel.load("model")
+    // }
 
     // }
 
