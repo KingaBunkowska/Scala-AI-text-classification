@@ -4,12 +4,16 @@ import scalafx.scene.control.Button
 import scalafx.scene.layout.StackPane
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
+import scalafx.scene.text.Font
+import scalafx.Includes._
+import scalafx.scene.input.{KeyCode, KeyEvent}
+import scalafx.geometry.Insets
 
 import scalafx.scene.control.{Button,ComboBox, TextArea, TextField}
 import scalafx.scene.layout.{StackPane, VBox}
 import scalafx.scene.layout.HBox
 import scalafx.collections.ObservableBuffer
-
+import scalafx.geometry.Pos
 
 import java.io.File
 import scala.io.Source
@@ -50,28 +54,53 @@ object FileReader {
 
 
 object Screen extends JFXApp {
+
+  var model: Model = _
+  var accuracy: Double = 100
+  def setModel(newModel: Model, newAccuracy: Double): Unit ={
+    model=newModel
+    accuracy = newAccuracy
+    accuracyValue.text=newAccuracy
+  }
+
+
   stage = new JFXApp.PrimaryStage {
-    title = "Prosty ekran z guzikiem"
-    width = 800
+    title = "Aplikacja do analizy tekstu"
+    width = 900
     height = 600
     scene = new Scene {
       // Definiujemy textField i button wewnątrz bloku inicjalizacyjnego sceny
-      val textField = new TextField {
+      val textField = new TextArea {
+        editable = true
         promptText = "Wpisz tekst tutaj..."
+        prefHeight = 100
+        prefWidth = 440
+        // alignment = Pos.TopLeft
+        wrapText = true
       }
       
       // TextArea do wyświetlania tekstu
       val textArea = new TextArea {
-        editable = true
-        prefHeight = 150
+        editable = false
+        font = Font.font(30)
+        prefHeight = 50
+        prefWidth = 440
+
       }
 
 
       val button1 = new Button {
-        text = "Kliknij mnie!"
+        text = "Analiza tekstu wpisanego"
         onAction = new EventHandler[ActionEvent] {
               override def handle(event: ActionEvent): Unit = {
-              textArea.text = textField.text.value
+                // textArea.text="Tekst napisany przez AI"
+                var isAIGenerated=model.predict(textField.text.value)
+                if(isAIGenerated==1.0){
+                  textArea.text="Tekst napisany przez AI"
+                }
+                else{
+                  textArea.text="Ludzki autor tekstu"
+                }
           }
         }
       }
@@ -91,24 +120,47 @@ object Screen extends JFXApp {
         promptText = "Wybierz plik z listy"
       }
 
-      val initialDirectory = "C:/Users/macie/projekt_Scala/pliki_do_analizy"
+      val initialDirectory = "pliki_testowe"
       val fileNames = FileLister.listFilesInDirectory(initialDirectory)
       comboBox.items = ObservableBuffer(fileNames)
 
       val button2 = new Button {
-        text = "Kliknij mnie!"
-        // onAction = () => println(s"Tekst z TextField: ${textField.text.value}")
+        text = "Analiza tekstu wybranego z foldera"
         onAction = new EventHandler[ActionEvent] {
             override def handle(event: ActionEvent): Unit = {
             println(comboBox.value.value)
             val selectedFile = comboBox.value.value
             if (selectedFile != null) {
-              val filePath = "C:/Users/macie/projekt_Scala/pliki_do_analizy/"+selectedFile
+              val filePath = "pliki_testowe/"+selectedFile
               val fileContent = FileReader.readFileToString(filePath)
-              textArea.text = fileContent
+              if(fileContent==1.0){
+                textArea.text="Tekst napisany przez AI"
+              }
+              else{
+                textArea.text="Ludzki autor tekstu"
+              }
             }
           }
         }
+      }
+
+      val accuracyTitle = new TextArea {
+        editable = false
+        text="Dokladnosc modelu"
+        font = Font.font(16)
+        prefHeight = 20
+        prefWidth = 80
+        style = "-fx-border-color: transparent; -fx-background-color: transparent;"
+
+      }
+
+      val accuracyValue = new TextArea {
+        editable = false
+        text= accuracy.toString
+        font = Font.font(30)
+        prefHeight = 40
+        prefWidth = 80
+        style = "-fx-border-color: transparent; -fx-background-color: transparent;"
       }
 
 
@@ -116,7 +168,9 @@ object Screen extends JFXApp {
         spacing = 10
         children = Seq(
           comboBox,
-          button2
+          button2,
+          accuracyTitle,
+          accuracyValue
         )
       }
 
@@ -126,6 +180,7 @@ object Screen extends JFXApp {
           vbox1,
           vbox2
         )
+        padding = Insets(20)
       }
 
       content = hbox

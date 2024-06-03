@@ -16,6 +16,8 @@ object SimpleApplication {
     val model = new Model(spark)
 
     model.train(train)
+    Screen.setModel(model,model.evaluate(test))
+    Screen.main(args)
     spark.stop()
   }
 }
