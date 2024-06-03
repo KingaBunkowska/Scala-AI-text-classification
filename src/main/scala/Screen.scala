@@ -54,7 +54,7 @@ object Screen extends JFXApp {
     title = "Prosty ekran z guzikiem"
     width = 800
     height = 600
-  scene = new Scene {
+    scene = new Scene {
       // Definiujemy textField i button wewnątrz bloku inicjalizacyjnego sceny
       val textField = new TextField {
         promptText = "Wpisz tekst tutaj..."
@@ -62,14 +62,13 @@ object Screen extends JFXApp {
       
       // TextArea do wyświetlania tekstu
       val textArea = new TextArea {
-        editable = false
+        editable = true
         prefHeight = 150
       }
 
 
       val button1 = new Button {
         text = "Kliknij mnie!"
-        // onAction = () => println(s"Tekst z TextField: ${textField.text.value}")
         onAction = new EventHandler[ActionEvent] {
               override def handle(event: ActionEvent): Unit = {
               textArea.text = textField.text.value
@@ -131,20 +130,6 @@ object Screen extends JFXApp {
 
       content = hbox
 
-
-
-      // content = new StackPane {
-      //   children = Seq(
-      //     new Button {
-      //       text = "Kliknij mnie!"
-      //       onAction = new EventHandler[ActionEvent] {
-      //         override def handle(event: ActionEvent): Unit = {
-      //           println("Przycisk zostal wcisniety!")
-      //         }
-      //       }
-      //     }
-      //   )
-      // }
     }
   }
 }
