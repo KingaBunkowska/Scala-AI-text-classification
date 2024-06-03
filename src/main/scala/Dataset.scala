@@ -22,17 +22,12 @@ class Dataset(spark: SparkSession) {
 
     df = df.withColumn("text", lower(col("text")))
       .withColumn("text", removePunctuation(col("text")))
+      .withColumn("text", regexp_replace(col("text"), "\n", ""))
   }
 
-  def split(testSize: Double, seed: Long): (DataFrame, DataFrame, DataFrame, DataFrame) = {
+  def split(testSize: Double, seed: Long): (DataFrame, DataFrame) = {
     val Array(trainingData, testData) = df.randomSplit(Array(1 - testSize, testSize), seed)
 
-    val training_X = trainingData.select("text")
-    val training_Y = trainingData.select("generated")
-
-    val test_X = testData.select("text")
-    val test_Y = testData.select("generated")
-
-    (training_X, training_Y, test_X, test_Y)
+    (trainingData, testData)
   }
 }

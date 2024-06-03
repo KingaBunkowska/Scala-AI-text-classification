@@ -3,8 +3,12 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{CountVectorizer, Tokenizer}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.ml.feature.CountVectorizerModel
+import org.apache.spark.sql.functions.lit
+import org.apache.spark.sql.functions.{col, split}
+import org.apache.spark.sql.{SparkSession, Row}
+import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.sql.functions._
 
 class Model(spark: SparkSession){
 
@@ -12,61 +16,92 @@ class Model(spark: SparkSession){
     private var tokenizer: Tokenizer = _
     private var cvModel: CountVectorizerModel = _ 
 
-    def train(texts: DataFrame, labels: DataFrame): Unit = {
-        // Tokenizacja tekstu
-        tokenizer = new Tokenizer()
-        .setInputCol("text")
-        .setOutputCol("words")
-        val tokenized_df = tokenizer.transform(texts)
+    def train(texts: DataFrame): Unit = {
+        import spark.implicits._
 
-        // Definiowanie CountVectorizer
+        println("Texts")
+        texts.columns.foreach(println)
+
+        tokenizer = new Tokenizer().setInputCol("text").setOutputCol("tokenizedWords")
+
+        var tokenizedData = tokenizer
+                            .transform(texts)
+        tokenizedData.show(3)
+
+        println("TokenizedData")
+        tokenizedData.columns.foreach(println)
+
         val cv = new CountVectorizer()
-        .setInputCol("words")
+        .setInputCol("tokenizedWords")
         .setOutputCol("features")
-        .setVocabSize(10000)  // Rozmiar słownika
-        .setMinDF(3)           // Minimalna liczba dokumentów, w których słowo musi wystąpić
+        .setVocabSize(10000)
+        .setMinDF(3)           
 
-        // Dopasowanie CountVectorizer do danych treningowych
-        cvModel = cv.fit(tokenized_df)
-        val featurized_df = cvModel.transform(tokenized_df)
+        cvModel = cv.fit(tokenizedData.select("tokenizedWords"))
 
-        // Inicjalizacja modelu Naive Bayes
+        val featurizedDF = cvModel.transform(tokenizedData)
+        println("FeaturizedDF")
+        featurizedDF.columns.foreach(println)
+        
+
         val nb = new NaiveBayes()
-        .setLabelCol("label")
+        .setLabelCol("generated")
         .setFeaturesCol("features")
+        .setPredictionCol("prediction")
 
-        // Dopasowanie modelu Naive Bayes do danych treningowych
-        val labeledData = featurized_df.join(labels, Seq("text"), "inner")
-        model = nb.fit(labeledData)
-    }
+        model = nb.fit(featurizedDF)
 
-    def evaluate(test_X: DataFrame, test_Y: DataFrame): Double = {
-        // Tokenizacja tekstu w danych testowych
-        val tokenizedData = tokenizer.transform(test_X)
-        val featurizedData = cvModel.transform(tokenizedData)
+        // model.save("model")
 
-        // Predykcja na danych testowych
-        val predictions = model.transform(featurizedData)
+        val predictions = model.transform(featurizedDF)
+        predictions.show(5)
 
-        // Ewaluacja modelu
         val evaluator = new MulticlassClassificationEvaluator()
-        .setLabelCol("label")
+        .setLabelCol("generated")
         .setPredictionCol("prediction")
         .setMetricName("accuracy")
         val accuracy = evaluator.evaluate(predictions)
+        println(s"Training accuracy: $accuracy")
 
+
+}
+
+    // def load(filePath: String): Unit = {
+    //     model = NaiveBayesModel.load("model")
+    // }
+
+    def evaluate(test: DataFrame): Double = {
+        val featurizedDF = cvModel.transform(tokenizer.transform(test))
+        val predictions = model.transform(featurizedDF)
+
+        val evaluator = new MulticlassClassificationEvaluator()
+        .setLabelCol("generated")
+        .setPredictionCol("prediction")
+        .setMetricName("accuracy")
+        val accuracy = evaluator.evaluate(predictions)
         accuracy
     }
 
-    // def predict(text: String): Double = {
-        
-    //     val input = spark.createDataFrame(Seq(text))
+    def predict(text: String): Double = {
 
-    //     val tokenizedText = tokenizer.transform(input)
-    //     val featurizedText = cvModel.transform(tokenizedText)
+        val removePunctuation = udf((text: String) => {
+            if (text != null) text.replaceAll("""[\p{Punct}]""", "") else null
+            })
 
-    //     // Predykcja na tekście
-    //     val prediction: Double = model.predict(featurizedText.head().getAs[Vector]("features"))
-    //     prediction
-    // }
+
+        val schema = StructType(Array(StructField("text", StringType, true)))
+        val rdd = spark.sparkContext.parallelize(Seq(Row(text)))
+        var input = spark.createDataFrame(rdd, schema)
+
+            input = input.withColumn("text", lower(col("text")))
+                    .withColumn("text", removePunctuation(col("text")))
+                    .withColumn("text", regexp_replace(col("text"), "\n", ""))
+
+        val featurizedDF = cvModel.transform(tokenizer.transform(input))
+        featurizedDF.show(1)
+        val predictions = model.transform(featurizedDF)
+        predictions.show(1)
+
+        predictions.first().getAs[Double]("prediction")
+    }
 }
