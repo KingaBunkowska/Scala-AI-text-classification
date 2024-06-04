@@ -19,17 +19,13 @@ class Model(spark: SparkSession){
     def train(texts: DataFrame): Unit = {
         import spark.implicits._
 
-        println("Texts")
-        texts.columns.foreach(println)
-
         tokenizer = new Tokenizer().setInputCol("text").setOutputCol("tokenizedWords")
 
         var tokenizedData = tokenizer
                             .transform(texts)
-        tokenizedData.show(3)
 
-        println("TokenizedData")
-        tokenizedData.columns.foreach(println)
+        // println("TokenizedData")
+        // tokenizedData.columns.foreach(println)
 
         val cv = new CountVectorizer()
         .setInputCol("tokenizedWords")
@@ -40,8 +36,8 @@ class Model(spark: SparkSession){
         cvModel = cv.fit(tokenizedData.select("tokenizedWords"))
 
         val featurizedDF = cvModel.transform(tokenizedData)
-        println("FeaturizedDF")
-        featurizedDF.columns.foreach(println)
+        // println("FeaturizedDF")
+        // featurizedDF.columns.foreach(println)
         
 
         val nb = new NaiveBayes()
@@ -54,7 +50,7 @@ class Model(spark: SparkSession){
         // model.save("model")
 
         val predictions = model.transform(featurizedDF)
-        predictions.show(5)
+        // predictions.show(5)
 
         val evaluator = new MulticlassClassificationEvaluator()
         .setLabelCol("generated")
@@ -93,14 +89,14 @@ class Model(spark: SparkSession){
         val rdd = spark.sparkContext.parallelize(Seq(Row(text)))
         var input = spark.createDataFrame(rdd, schema)
 
-            input = input.withColumn("text", lower(col("text")))
-                    .withColumn("text", removePunctuation(col("text")))
-                    .withColumn("text", regexp_replace(col("text"), "\n", ""))
+        input = input.withColumn("text", lower(col("text")))
+                .withColumn("text", removePunctuation(col("text")))
+                .withColumn("text", regexp_replace(col("text"), "\n", ""))
 
         val featurizedDF = cvModel.transform(tokenizer.transform(input))
-        featurizedDF.show(1)
+        // featurizedDF.show(1)
         val predictions = model.transform(featurizedDF)
-        predictions.show(1)
+        // predictions.show(1)
 
         predictions.first().getAs[Double]("prediction")
     }
