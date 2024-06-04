@@ -55,14 +55,17 @@ object FileReader {
 
 object Screen extends JFXApp {
 
+
   var model: Model = _
-  var accuracy: Double = 100
+  var accuracy: Double = _
+
   def setModel(newModel: Model, newAccuracy: Double): Unit ={
     model=newModel
     accuracy = newAccuracy
-    accuracyValue.text=newAccuracy
+    print("dokladnosc modelu")
+    print(accuracy)
+    // accuracyValue.text = "Zmienione"
   }
-
 
   stage = new JFXApp.PrimaryStage {
     title = "Aplikacja do analizy tekstu"
@@ -99,8 +102,9 @@ object Screen extends JFXApp {
                   textArea.text="Tekst napisany przez AI"
                 }
                 else{
-                  textArea.text="Ludzki autor tekstu"
+                  textArea.text="Tekst autorski"
                 }
+                accuracyValue.text=f"$accuracy%.2f"
           }
         }
       }
@@ -132,13 +136,14 @@ object Screen extends JFXApp {
             val selectedFile = comboBox.value.value
             if (selectedFile != null) {
               val filePath = "pliki_testowe/"+selectedFile
-              val fileContent = FileReader.readFileToString(filePath)
+              val fileContent = model.predict(FileReader.readFileToString(filePath))
               if(fileContent==1.0){
                 textArea.text="Tekst napisany przez AI"
               }
               else{
-                textArea.text="Ludzki autor tekstu"
+                textArea.text="Tekst autorski"
               }
+              accuracyValue.text=f"$accuracy%.2f"
             }
           }
         }
@@ -156,7 +161,7 @@ object Screen extends JFXApp {
 
       val accuracyValue = new TextArea {
         editable = false
-        text= accuracy.toString
+        text= ""
         font = Font.font(30)
         prefHeight = 40
         prefWidth = 80
@@ -187,4 +192,7 @@ object Screen extends JFXApp {
 
     }
   }
+
+
+
 }

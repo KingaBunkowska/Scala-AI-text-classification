@@ -1,4 +1,0 @@
-FROM openjdk:11
-
-WORKDIR /projekt_Scala
-
