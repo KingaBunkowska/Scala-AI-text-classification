@@ -18,6 +18,9 @@ import scalafx.geometry.Pos
 import java.io.File
 import scala.io.Source
 
+
+// Objekt odpowiedzialny za wypisanie wszystkich plików wewnątrz wybranego folderu
+
 object FileLister {
   def listFilesInDirectory(directoryPath: String): List[String] = {
     val directory = new File(directoryPath)
@@ -34,6 +37,7 @@ object FileLister {
   }
 }
 
+// Objekt zaprojektowany w celu zczytywania danych z plików
 
 object FileReader {
   def readFileToString(filePath: String): String = {
@@ -49,40 +53,33 @@ object FileReader {
 
 
 
-
-
-
-
 object Screen extends JFXApp {
-
 
   var model: Model = _
   var accuracy: Double = _
 
+// funkcja wykorzystywana do pobrania modelu używanego do analizy tekstów 
   def setModel(newModel: Model, newAccuracy: Double): Unit ={
     model=newModel
     accuracy = newAccuracy
-    print("dokladnosc modelu")
-    print(accuracy)
-    // accuracyValue.text = "Zmienione"
   }
 
+//  
   stage = new JFXApp.PrimaryStage {
     title = "Aplikacja do analizy tekstu"
     width = 900
     height = 600
     scene = new Scene {
-      // Definiujemy textField i button wewnątrz bloku inicjalizacyjnego sceny
+      // Pole do umożliwiające wpisanie tekstu do anzalizy
       val textField = new TextArea {
         editable = true
         promptText = "Wpisz tekst tutaj..."
         prefHeight = 100
         prefWidth = 440
-        // alignment = Pos.TopLeft
         wrapText = true
       }
       
-      // TextArea do wyświetlania tekstu
+      // Pole wyświetlające wynik analizy tekstu
       val textArea = new TextArea {
         editable = false
         font = Font.font(30)
@@ -91,12 +88,11 @@ object Screen extends JFXApp {
 
       }
 
-
+// Guzik włączający analizę tekstu wpisanego
       val button1 = new Button {
         text = "Analiza tekstu wpisanego"
         onAction = new EventHandler[ActionEvent] {
               override def handle(event: ActionEvent): Unit = {
-                // textArea.text="Tekst napisany przez AI"
                 var isAIGenerated=model.predict(textField.text.value)
                 if(isAIGenerated==1.0){
                   textArea.text="Tekst napisany przez AI"
@@ -124,10 +120,12 @@ object Screen extends JFXApp {
         promptText = "Wybierz plik z listy"
       }
 
+// zapełnienie combo boxa możliwymi do wyboru nazwami plików foldera 
       val initialDirectory = "pliki_testowe"
       val fileNames = FileLister.listFilesInDirectory(initialDirectory)
       comboBox.items = ObservableBuffer(fileNames)
 
+// Guzik włączający analizę tekstu wybranego z pliku
       val button2 = new Button {
         text = "Analiza tekstu wybranego z foldera"
         onAction = new EventHandler[ActionEvent] {
@@ -148,7 +146,7 @@ object Screen extends JFXApp {
           }
         }
       }
-
+ 
       val accuracyTitle = new TextArea {
         editable = false
         text="Dokladnosc modelu"
@@ -159,6 +157,7 @@ object Screen extends JFXApp {
 
       }
 
+// Pole wyświetlające skuteczność całego wyszkolonego modelu w stwierdzaniu, czy dany tekst jest wygenerowany przez AI. 
       val accuracyValue = new TextArea {
         editable = false
         text= ""
@@ -192,7 +191,4 @@ object Screen extends JFXApp {
 
     }
   }
-
-
-
 }
