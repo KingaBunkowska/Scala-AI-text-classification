@@ -2,7 +2,6 @@ import org.apache.spark.sql.SparkSession
 
 object SimpleApplication {
   def main(args: Array[String]): Unit = {
-    // Spark config
     val spark = SparkSession.builder()
       .appName("Simple Application")
       .master("local")

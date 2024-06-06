@@ -51,7 +51,6 @@ class Model(spark: SparkSession){
 
         model = nb.fit(featurizedDF)
 
-        // model.save("model")
 
         val predictions = model.transform(featurizedDF)
         predictions.show(5)
@@ -66,9 +65,6 @@ class Model(spark: SparkSession){
 
 }
 
-    // def load(filePath: String): Unit = {
-    //     model = NaiveBayesModel.load("model")
-    // }
 
     def evaluate(test: DataFrame): Double = {
         val featurizedDF = cvModel.transform(tokenizer.transform(test))

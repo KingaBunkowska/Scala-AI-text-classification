@@ -15,7 +15,7 @@ import java.io.File
 import scala.io.Source
 
 
-// Objekt odpowiedzialny za wypisanie wszystkich plików wewnątrz wybranego folderu
+// Object responsible for listing all files inside the selected folder
 
 object FileLister {
   def listFilesInDirectory(directoryPath: String): List[String] = {
@@ -33,7 +33,7 @@ object FileLister {
   }
 }
 
-// Objekt zaprojektowany w celu zczytywania danych z plików
+// An object designed to read data from files
 
 object FileReader {
   def readFileToString(filePath: String): String = {
@@ -54,19 +54,19 @@ object Screen extends JFXApp {
   var model: Model = _
   var accuracy: Double = _
 
-// funkcja wykorzystywana do pobrania modelu używanego do analizy tekstów 
+// function used to retrieve the model used for text analysis
   def setModel(newModel: Model, newAccuracy: Double): Unit ={
     model=newModel
     accuracy = newAccuracy
   }
 
-//  
+ 
   stage = new JFXApp.PrimaryStage {
     title = "Aplikacja do analizy tekstu"
     width = 900
     height = 600
     scene = new Scene {
-      // Pole do umożliwiające wpisanie tekstu do anzalizy
+      // The field for entering text for analysis
       val textField = new TextArea {
         editable = true
         promptText = "Wpisz tekst tutaj..."
@@ -75,7 +75,7 @@ object Screen extends JFXApp {
         wrapText = true
       }
       
-      // Pole wyświetlające wynik analizy tekstu
+      // A field displaying the text analysis result
       val textArea = new TextArea {
         editable = false
         font = Font.font(30)
@@ -84,7 +84,7 @@ object Screen extends JFXApp {
 
       }
 
-// Guzik włączający analizę tekstu wpisanego
+// Button that turns on the analysis of the entered text
       val button1 = new Button {
         text = "Analiza tekstu wpisanego"
         onAction = new EventHandler[ActionEvent] {
@@ -116,12 +116,12 @@ object Screen extends JFXApp {
         promptText = "Wybierz plik z listy"
       }
 
-// zapełnienie combo boxa możliwymi do wyboru nazwami plików foldera 
+// filling the combo box with selectable folder filenames
       val initialDirectory = "pliki_testowe"
       val fileNames = FileLister.listFilesInDirectory(initialDirectory)
       comboBox.items = ObservableBuffer(fileNames)
 
-// Guzik włączający analizę tekstu wybranego z pliku
+// Button enabling analysis of text selected from the file
       val button2 = new Button {
         text = "Analiza tekstu wybranego z foldera"
         onAction = new EventHandler[ActionEvent] {
@@ -153,7 +153,7 @@ object Screen extends JFXApp {
 
       }
 
-// Pole wyświetlające skuteczność całego wyszkolonego modelu w stwierdzaniu, czy dany tekst jest wygenerowany przez AI. 
+// A field that displays the effectiveness of the entire trained model in determining whether a given text is AI-generated.
       val accuracyValue = new TextArea {
         editable = false
         text= ""
