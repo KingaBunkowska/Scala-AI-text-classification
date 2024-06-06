@@ -1,6 +1,5 @@
 import scalafx.application.JFXApp
 import scalafx.scene.Scene
-import scalafx.scene.control.Button
 import scalafx.scene.layout.StackPane
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -8,13 +7,10 @@ import scalafx.scene.text.Font
 import scalafx.Includes._
 import scalafx.scene.input.{KeyCode, KeyEvent}
 import scalafx.geometry.Insets
-
 import scalafx.scene.control.{Button,ComboBox, TextArea, TextField}
-import scalafx.scene.layout.{StackPane, VBox}
-import scalafx.scene.layout.HBox
+import scalafx.scene.layout.{StackPane, VBox, HBox}
 import scalafx.collections.ObservableBuffer
 import scalafx.geometry.Pos
-
 import java.io.File
 import scala.io.Source
 
